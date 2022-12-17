@@ -1,8 +1,13 @@
-Change the following environmental variable according to your setup
-`DOCKER_INFLUXDB_INIT_USERNAME` \n
-`DOCKER_INFLUXDB_INIT_PASSWORD` \n
-`DOCKER_INFLUXDB_INIT_ORG` \n
-`DOCKER_INFLUXDB_INIT_BUCKET` \n
+To run the services
+```
+docker-compose up
+```
+
+Change the following environmental variable according to your setup<br>
+`DOCKER_INFLUXDB_INIT_USERNAME`<br>
+`DOCKER_INFLUXDB_INIT_PASSWORD`<br>
+`DOCKER_INFLUXDB_INIT_ORG`<br>
+`DOCKER_INFLUXDB_INIT_BUCKET`<br>
 `DOCKER_INFLUXDB_INIT_ADMIN_TOKEN`
 
 These variables are in the following files
