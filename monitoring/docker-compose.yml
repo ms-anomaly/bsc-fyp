@@ -1,0 +1,91 @@
+version: '3.2'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.33.3
+    container_name: prometheus
+    ports:
+    - 9090:9090
+    command:
+    - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+    - cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    command:
+     - -port=8050
+    ports:
+    - 8050:8050
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+  #   depends_on:
+  #   - redis
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #   - 6379:6379
+  influxdb:
+    image: influxdb:latest
+    volumes:
+      # Mount for influxdb data directory and configuration
+      - ./influxdb-data/anaisdotis-georgiou/temp/influxdb2:/var/lib/influxdb2:rw
+    ports:
+      - "8086:8086"
+    environment:
+    - INFLUXDB_ADMIN_USER=admin
+    - INFLUXDB_ADMIN_PASSWORD=admin1234
+
+  # Use the influx cli to set up an influxdb instance. 
+  influxdb_cli:
+    links:
+      - influxdb
+    image: influxdb:latest
+    volumes:
+      # Mount for influxdb data directory and configuration
+      - ./influxdb-data/anaisdotis-georgiou/temp/influxdb2:/var/lib/influxdb2:rw
+      - ./ssl/influxdb-selfsigned.crt:/etc/ssl/influxdb-selfsigned.crt:rw
+      - ./ssl/influxdb-selfsigned.key:/etc/ssl/influxdb-selfsigned.key:rw
+    environment: 
+       # Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=abcd1234
+      - DOCKER_INFLUXDB_INIT_ORG=fyp
+      - DOCKER_INFLUXDB_INIT_BUCKET=robot-shop
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="ehy8RWqIu6GpyXeIKGrpYBMsAYCe_URhBZKvyE93P_0EGczEsOnTTDq_RISdSOiC_e-vJhSoV_58KXBxHUOyrA=="
+      - INFLUXD_TLS_CERT=/etc/ssl/influxdb-selfsigned.crt
+      - INFLUXD_TLS_KEY=/etc/ssl/influxdb-selfsigned.key
+    entrypoint: ["./entrypoint.sh"]
+    restart: on-failure:10
+    depends_on:
+      - influxdb
+  telegraf:
+    image: telegraf
+    links:
+      - influxdb
+    ports:
+      - "1234:1234"
+    volumes:
+      # Mount for telegraf config
+      - ./telegraf/mytelegraf.conf:/etc/telegraf/telegraf.conf
+    env_file:
+      - ./telegraf/influxv2.env
+    environment: 
+      - DOCKER_INFLUXDB_INIT_ORG=fyp
+      - DOCKER_INFLUXDB_INIT_BUCKET=robot-shop
+
+
+
+
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="ehy8RWqIu6GpyXeIKGrpYBMsAYCe_URhBZKvyE93P_0EGczEsOnTTDq_RISdSOiC_e-vJhSoV_58KXBxHUOyrA=="
+    depends_on:
+      - influxdb_cli
+volumes:
+  influxdb2:
