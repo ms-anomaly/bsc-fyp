@@ -22,11 +22,8 @@ rule_files:
 
 # Remote write configuration (for Graphite, OpenTSDB, or InfluxDB).
 remote_write:
-<<<<<<< HEAD
-  - url: "http://telegraph:1234/receive"
-=======
   - url: "http://telegraf:1234/receive"
->>>>>>> master
+
 
 # - url "http://localhost:8086/api/v1/prom/write?u=admin&p=abcd1234&db=prometheus&data_format="prometheusremotewrite""
 

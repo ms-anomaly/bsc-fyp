@@ -75,7 +75,6 @@ services:
     environment: 
       - DOCKER_INFLUXDB_INIT_ORG=fyp
       - DOCKER_INFLUXDB_INIT_BUCKET=robot-shop
-<<<<<<< HEAD
 
 
 
@@ -85,5 +84,3 @@ services:
   #     - influxdb_cli
 #volumes:
 #  influxdb2:
-=======
->>>>>>> master
