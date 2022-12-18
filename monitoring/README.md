@@ -1,3 +1,5 @@
+![monitoring-service-arch](fyp-monitoring.jpg)
+
 To run the services
 ```
 docker-compose up
