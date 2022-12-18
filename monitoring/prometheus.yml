@@ -20,9 +20,9 @@ rule_files:
 #   - username: "admin"
 #   - password: "abcd1234"
 
-#Remote write configuration (for Graphite, OpenTSDB, or InfluxDB).
+# Remote write configuration (for Graphite, OpenTSDB, or InfluxDB).
 remote_write:
-  - url: "http://localhost:1234/receive"
+  - url: "http://telegraf:1234/receive"
 
 # - url "http://localhost:8086/api/v1/prom/write?u=admin&p=abcd1234&db=prometheus&data_format="prometheusremotewrite""
 
