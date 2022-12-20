@@ -1,0 +1,3 @@
+/data_collection/data/
+/influxdb-data/
+/telegraf/influxv2.env

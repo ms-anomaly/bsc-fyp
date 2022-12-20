@@ -24,6 +24,7 @@ rule_files:
 remote_write:
   - url: "http://telegraf:1234/receive"
 
+
 # - url "http://localhost:8086/api/v1/prom/write?u=admin&p=abcd1234&db=prometheus&data_format="prometheusremotewrite""
 
 # Remote read configuration (for InfluxDB only at the moment).
