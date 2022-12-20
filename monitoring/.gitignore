@@ -1,1 +1,2 @@
-./data_collection/data
+./data_collection/data/
+./influxdb-data/
