@@ -22,7 +22,8 @@ class query_generator:
             |> range(start: '+ str(start)+', stop: '+ str(end)+')\
             |> filter(fn:(r) => r._measurement == "'+self.measurement+'")\
             |> filter(fn:(r) => r.name == "'+container_name+'")\
-            |> filter(fn:(r) => r._field == "'+field+'")'
+            |> filter(fn:(r) => r._field == "'+field+'")\
+            |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")'
 
         print(start,end)
         return query
