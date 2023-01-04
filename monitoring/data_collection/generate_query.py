@@ -14,15 +14,27 @@ class query_generator:
         self.measurement = measurement
         self.client = client
         
-    def generate_query(self,container_name,field,start=-10,end=0):
+    def generate_query(self,container_name,field,start=-10,end=0,flag_first=False):
         '''
         This function needs to just generate a string
         '''
+        if flag_first:
+            query = 'from(bucket:"'+self.bucket+'")\
+            |> range(start: '+ str(start)+', stop: '+ str(end)+')\
+            |> filter(fn:(r) => r._measurement == "'+self.measurement+'")\
+            |> filter(fn:(r) => r.name == "'+container_name+'")\
+            |> filter(fn:(r) => r._field == "'+field+'")\
+            |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")\
+            |> keep(columns:["time","_start","_stop","'+ field +'"])'
+            
+            return query
         query = 'from(bucket:"'+self.bucket+'")\
             |> range(start: '+ str(start)+', stop: '+ str(end)+')\
             |> filter(fn:(r) => r._measurement == "'+self.measurement+'")\
             |> filter(fn:(r) => r.name == "'+container_name+'")\
-            |> filter(fn:(r) => r._field == "'+field+'")'
+            |> filter(fn:(r) => r._field == "'+field+'")\
+            |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")\
+            |> keep(columns:["'+ field +'"])'
 
         print(start,end)
         return query
@@ -37,9 +49,14 @@ class query_generator:
             end = start + window_size
             for container in self.container_names:
                 container_window_df = pd.DataFrame()
-                for field in self.fields:
+                for i,field in enumerate(self.fields):
+                    query = ''
+                    if (i == 0):
+                        # set up time in dataframe
+                        query = self.generate_query(container,field,start,end,True)
                     #end = range_st + window_size
-                    query = self.generate_query(container,field,start,end)
+                    else:
+                        query = self.generate_query(container,field,start,end)
                     res = self.client.query_df(query)
                     print(res.head())
                     # append res to data
