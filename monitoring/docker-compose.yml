@@ -12,6 +12,8 @@ services:
     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
     - cadvisor
+    networks:
+      - robot-shop
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -25,6 +27,8 @@ services:
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - robot-shop
 
   influxdb:
     image: influxdb:latest
@@ -33,6 +37,8 @@ services:
       - ./influxdb-data/anaisdotis-georgiou/temp/influxdb2:/var/lib/influxdb2:rw
     ports:
       - "8086:8086"
+    networks:
+      - robot-shop
 
   telegraf:
     image: telegraf
@@ -48,4 +54,10 @@ services:
     environment: 
       - DOCKER_INFLUXDB_INIT_ORG=fyp
       - DOCKER_INFLUXDB_INIT_BUCKET=robot-shop
+    networks:
+      - robot-shop
 
+networks:
+  robot-shop:
+    name: robot-shop_robot-shop
+    external: true
