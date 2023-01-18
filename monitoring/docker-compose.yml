@@ -37,6 +37,12 @@ services:
       - ./influxdb-data/anaisdotis-georgiou/temp/influxdb2:/var/lib/influxdb2:rw
     ports:
       - "8086:8086"
+    environment:
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=abcd1234
+      - INFLUXDB_INIT_ORG=fyp
+      - INFLUXDB_INIT_BUCKET=robot-shop
+      - INFLUXDB_INIT_ADMIN_TOKEN="SnvC2tu6nXOt0z3USH639fMlC1NkG9L_XJWVLA847tdC5DU2MbJgllFU6GRa1PCiBmvOc1q125hXrX680nD1aA=="
     networks:
       - robot-shop
 
