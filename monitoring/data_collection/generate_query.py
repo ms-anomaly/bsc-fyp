@@ -84,17 +84,17 @@ class query_generator:
                     service_name = x.split("_")[3]
 
                     if (service_name==this_service):
-                        for y in self.metric_ends:
-                            metric_name_comp = x + y
-                            print(metric_name_comp)
-                            query = 'from(bucket:"'+self.bucket+'")\
-                                    |> range(start: '+ str(start)+', stop: '+ str(end)+')\
-                                    |> filter(fn:(r) => r._field == "'+metric_name_comp+'")\
-                                    |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")\
-                                    |> keep(columns:["'+ metric_name_comp +'"])'
-                            res = self.client.query_df(query)
-                            print(res.size)
-                            container_window_df = pd.concat([container_window_df,res],axis=1)
+                        #for y in self.metric_ends:
+                        #metric_name_comp = x + y
+                        print(x)
+                        query = 'from(bucket:"'+self.bucket+'")\
+                                |> range(start: '+ str(start)+', stop: '+ str(end)+')\
+                                |> filter(fn:(r) => r._field == "'+x+'")\
+                                |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")\
+                                |> keep(columns:["'+ x +'"])'
+                        res = self.client.query_df(query)
+                        print(res.size)
+                        container_window_df = pd.concat([container_window_df,res],axis=1)
 
                         
 
@@ -121,8 +121,11 @@ class influx_data_client:
         #print(result.to_string())
         return result
 
-metrics = ["rt_cart_get_redis ","rt_cart_delete_redis","rt_cart_post_redis","rt_cart_get_catalogue_categories","rt_cart_get_catalogue","rt_payment_post_rabbitmq","rt_shipping_get_count","rt_shipping_get_code","rt_shipping_get_calcid"
-,"rt_shipping_post_confirm","rt_user_get_redis","rt_user_get_mongo_checkid","rt_user_get_mongo_users","rt_user_post_login","rt_user_post_register","rt_user_post_order","rt_user_get_mongo_history","rt_dispatch_consume_rabbitmq"]
+#metrics = ["rt_cart_get_redis","rt_cart_delete_redis","rt_cart_post_redis","rt_cart_get_catalogue_categories","rt_cart_get_catalogue","rt_payment_post_rabbitmq","rt_shipping_get_count","rt_shipping_get_code","rt_shipping_get_calcid"
+#,"rt_shipping_post_confirm","rt_user_get_redis","rt_user_get_mongo_checkid","rt_user_get_mongo_users","rt_user_post_login","rt_user_post_register","rt_user_post_order","rt_user_get_mongo_history","rt_dispatch_consume_rabbitmq"
+
+
+metrics_new = ['rt_cart_delete_redis_bucket', 'rt_cart_get_catalogue_bucket', 'rt_cart_delete_redis_sum', 'rt_cart_delete_redis_count', 'rt_cart_get_catalogue_count', 'rt_cart_get_catalogue_sum', 'rt_cart_get_redis_bucket', 'rt_cart_get_redis_count', 'rt_cart_get_redis_sum', 'rt_cart_post_redis_bucket', 'rt_cart_post_redis_count', 'rt_cart_post_redis_sum', 'rt_dispatch_consume_rabbitmq_bucket', 'rt_dispatch_consume_rabbitmq_count', 'rt_dispatch_consume_rabbitmq_sum', 'rt_payment_post_rabbitmq_bucket', 'rt_payment_post_rabbitmq_count', 'rt_payment_post_rabbitmq_created', 'rt_payment_post_rabbitmq_sum', 'rt_user_get_mongo_checkid_bucket', 'rt_user_get_mongo_checkid_count', 'rt_user_get_mongo_checkid_sum', 'rt_user_get_mongo_history_bucket', 'rt_user_get_mongo_history_count', 'rt_user_get_mongo_history_sum', 'rt_user_get_redis_sum', 'rt_user_get_redis_count', 'rt_user_get_mongo_users_sum', 'rt_user_get_mongo_users_count', 'rt_user_get_mongo_users_bucket', 'rt_user_get_redis_bucket', 'rt_user_post_login_bucket', 'rt_user_post_login_count', 'rt_user_post_login_sum', 'rt_user_post_order_bucket', 'rt_user_post_order_count', 'rt_user_post_order_sum', 'rt_user_post_register_bucket', 'rt_user_post_register_count', 'rt_web_get_catalogue_allproduts_bucket', 'rt_web_get_catalogue_allproduts_count', 'rt_user_post_register_sum', 'rt_web_get_catalogue_categories_bucket', 'rt_web_get_catalogue_allproduts_sum', 'rt_web_get_catalogue_categories_sum', 'rt_web_get_catalogue_categories_count', 'rt_web_get_catalogue_productsfromcategories_bucket', 'rt_web_get_catalogue_productsfromcategories_count', 'rt_web_get_catalogue_productsfromcategories_sum', 'rt_web_get_catalogue_productsku_bucket', 'rt_web_get_catalogue_productsku_count', 'rt_web_get_catalogue_productsku_sum', 'rt_web_get_catalogue_search_bucket', 'rt_web_get_catalogue_search_count', 'rt_web_get_catalogue_search_sum']
 metric_name_ends = ["_sum","_count"]
 
 bucket = "robot-shop"
@@ -138,7 +141,7 @@ fields = ["container_memory_usage_bytes","container_cpu_usage_seconds_total"]
 end_time = int(time.time())
 st_time = 1674010000
 client = influx_data_client(url,token,org)
-query_gen = query_generator(client,bucket,measurement_name,containers,fields,metrics,services)
+query_gen = query_generator(client,bucket,measurement_name,containers,fields,metrics_new,services)
 query_gen.get_csv(st_time,end_time)
 
 
