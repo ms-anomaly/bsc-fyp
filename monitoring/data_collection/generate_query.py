@@ -27,7 +27,7 @@ class query_generator:
             |> filter(fn:(r) => r.name == "'+container_name+'")\
             |> filter(fn:(r) => r._field == "'+field+'")\
             |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")\
-            |> keep(columns:["time","_start","_stop","'+ field +'"])'
+            |> keep(columns:["_time","_start","_stop","'+ field +'"])'
             
             return query
         elif not flag_first:
@@ -70,10 +70,10 @@ class query_generator:
                     query = ''
                     if (i == 0):
                         # set up time in dataframe
-                        query = self.generate_query(container,field,start,end,True,False)
+                        query = self.generate_query(container,field,start,end,flag_first=True,rt_metrics=False)
                     #end = range_st + window_size
                     else:
-                        query = self.generate_query(container,field,start,end,False,False)
+                        query = self.generate_query(container,field,start,end,flag_first=False,rt_metrics=False)
                     res = self.client.query_df(query)
                     # # #print(res.head())
                     # append res to data
@@ -130,16 +130,16 @@ metric_name_ends = ["_sum","_count"]
 
 bucket = "robot-shop"
 org = "fyp"
-token = "SeKy4l1Tddlw9H6CYG25eZx3k5-Wm6vUd1QK_C1KuRATiOW0mI_qLpiMmYWOo0qLwH7PLl8HB--wXO05PGDTOQ=="
+token = "5zWP4RyKL8xMZ86bV_JLngmgxkXLuntfVwphkEZOJBdmy8iWZhvPnNGWyNOd7sYJSk98pH6aMl2hGp5vR91peA=="
 # Store the URL of your InfluxDB instance
-url="http://3.1.24.26:8086"
+url="http://13.212.230.16:8086"
 measurement_name = "prometheus_remote_write"
 #containers = ["robot-shop_cart_1","robot-shop_catalogue_1"]
 containers = ["robot-shop_web_1", "robot-shop_user_1" ,"robot-shop_shipping_1", "robot-shop_redis_1", "robot-shop_ratings_1", "robot-shop_rabbitmq_1", "robot-shop_payment_1", "robot-shop_mysql_1", "robot-shop_mongodb_1", "robot-shop_dispatch_1",  "robot-shop_cart_1", "robot-shop_catalogue_1"]
 services = ["web", "users","shipping","redis","rating", "rabbitmq", "payment","mysql","mongo","dispatch","cart","catalogue"]
-fields = ["container_memory_usage_bytes","container_cpu_usage_seconds_total"]
+fields = ["container_memory_usage_bytes","container_cpu_usage_seconds_total","container_network_receive_bytes_total","container_network_receive_errors_total","container_network_transmit_bytes_total","container_network_transmit_errors_total"]
 end_time = int(time.time())
-st_time = 1674010000
+st_time = 1674539419
 client = influx_data_client(url,token,org)
 query_gen = query_generator(client,bucket,measurement_name,containers,fields,metrics_new,services)
 query_gen.get_csv(st_time,end_time)
