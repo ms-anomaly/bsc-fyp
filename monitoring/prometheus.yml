@@ -45,3 +45,10 @@ scrape_configs:
     - targets:
       - web:8080
     metrics_path: /api/shipping/actuator/prometheus
+
+  - job_name: robot-shop-ratings
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - rating-metric-listener:8082
+    metrics_path: /ratings/metrics
