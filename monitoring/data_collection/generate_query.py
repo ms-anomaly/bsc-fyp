@@ -143,8 +143,8 @@ measurement_name = "prometheus_remote_write"
 containers = ["robot-shop_web_1", "robot-shop_user_1" ,"robot-shop_shipping_1", "robot-shop_redis_1", "robot-shop_ratings_1", "robot-shop_rabbitmq_1", "robot-shop_payment_1", "robot-shop_mysql_1", "robot-shop_mongodb_1", "robot-shop_dispatch_1",  "robot-shop_cart_1", "robot-shop_catalogue_1"]
 services = ["web", "users","shipping","redis","rating", "rabbitmq", "payment","mysql","mongo","dispatch","cart","catalogue"]
 fields = ["container_memory_usage_bytes","container_cpu_usage_seconds_total","container_network_receive_bytes_total","container_network_receive_errors_total","container_network_transmit_bytes_total","container_network_transmit_errors_total"]
-end_time = int(time.time())
-st_time = 1676650000
+end_time = int(time.time()) - 3600
+st_time = 1676303741
 client = influx_data_client(url,token,org)
 query_gen = query_generator(client,bucket,measurement_name,containers,fields,metrics_new,services)
 query_gen.get_csv(st_time,end_time)
