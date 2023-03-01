@@ -1,7 +1,7 @@
 import glob
 import pandas as pd
 
-folder_path = 'D:/ACA/fyp/bsc-fyp/monitoring/data_collection/data/cadvisor/'
+folder_path = 'D:/ACA/fyp/bsc-fyp/monitoring/data_collection/data/anomaly_rt_delay_catalogue_cadvisor_data/'
 files = glob.glob(folder_path+'*/*')
 print(len(files))
 total_hours = len(glob.glob(folder_path+'*'))
@@ -46,5 +46,5 @@ for j,service in enumerate(services):
   service_cols.pop(0)
   service_cols.insert(0,'timestamp')
   service_df = pd.DataFrame(data_service,columns=service_cols)
-  service_df.to_csv('test/'+service+'.csv')
+  service_df.to_csv('anomaly_rt_delay_catalogue_cadvisor_data_combined/'+service+'.csv')
 

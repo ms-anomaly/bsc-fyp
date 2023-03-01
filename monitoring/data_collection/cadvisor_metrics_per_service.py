@@ -11,13 +11,13 @@ now_time = str(int(time.time()))
 # select the bucket to use
 bucket = "robot-shop"
 
-st_time = 1676190960
-end_time = 1676660400 #st_time + 3600 * 24 * 4
-step = 3600
-containers = ['user', 'dispatch', 'ratings', 'payment', 'shipping', 'mongodb', 'web', 'cart', 'redis', 'mysql', 'rabbitmq', 'catalogue']
+st_time = 1677659710
+end_time = st_time + 5400
+step = 5400
+containers = ['user', 'dispatch', 'ratings', 'payment',  'mongodb', 'web', 'cart', 'redis', 'mysql', 'rabbitmq', 'catalogue']
 for container in containers:
     print(container)
-    for i,st in enumerate(range(st_time,end_time-step,step)):
+    for i,st in enumerate(range(st_time,end_time,step)):
         print(st)
         # create a query string to select all data from a measurement
         query = f'from(bucket: "{bucket}") |> range(start: {st}, stop: {st+step}) \
