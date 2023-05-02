@@ -11,16 +11,23 @@ now_time = str(int(time.time()))
 # select the bucket to use
 bucket = "robot-shop"
 
-st_time = 1677659710
-end_time = st_time + 5400
-step = 5400
-containers = ['user', 'dispatch', 'ratings', 'payment',  'mongodb', 'web', 'cart', 'redis', 'mysql', 'rabbitmq', 'catalogue']
-for container in containers:
-    print(container)
-    for i,st in enumerate(range(st_time,end_time,step)):
-        print(st)
-        # create a query string to select all data from a measurement
-        query = f'from(bucket: "{bucket}") |> range(start: {st}, stop: {st+step}) \
+### Change these for each anomaly
+anomaly = 'high_cpu' 
+st_time = 1683007200
+end_time = st_time+30000
+step = 6000
+anomaly_services = ['ratings','cart','user','payment','dispatch']
+
+containers = ['user', 'dispatch','payment', 'ratings', 'shipping',  'mongodb', 'web', 'cart', 'redis', 'mysql', 'rabbitmq', 'catalogue']
+for i,anomaly_serivce in enumerate(anomaly_services):
+    print(anomaly_serivce)
+    anomaly_st = st_time + i*step
+    anomaly_end = anomaly_st + step
+    save_path = anomaly+'_'+anomaly_serivce+'_cadvisor'
+    for container in containers:
+    
+        print(anomaly_st)
+        query = f'from(bucket: "{bucket}") |> range(start: {anomaly_st}, stop: {anomaly_end}) \
                 |> filter(fn: (r) => r._measurement == "prometheus_remote_write" and r.name == "robot-shop-{container}-1")\
                 |> keep(columns:["_time","_value","_field"])\
                 |> pivot(rowKey:["_time"], columnKey: ["_field"],valueColumn: "_value")'
@@ -30,11 +37,14 @@ for container in containers:
         query_api = client.query_api()
         csv_result = query_api.query_data_frame(org=org,query=query)
 
-        # data = [record.values for table in results for record in table.records]
-        # print('here2')
-        # create a DataFrame from the query results
         df = pd.DataFrame(csv_result)
-        out_dir = os.path.join(os.getcwd(),"data",now_time,str(i))
+        max_timestamp = pd.Timestamp(st_time,unit='s',tz='+00:00')
+        for j, row in df.iterrows():
+            if row['_time'] < max_timestamp:
+                df = df.iloc[:j]
+                break
+            max_timestamp = row['_time']
+        out_dir = os.path.join(os.getcwd(),"data",save_path)
         if not os.path.exists(out_dir):
             print("making dir")
             os.makedirs(out_dir)

@@ -1,3 +1,4 @@
-/data_collection/data/
+monitoring/data_collection/data_0/
+monitoring/data_collection/data_new/
 /influxdb-data/
 /telegraf/influxv2.env
