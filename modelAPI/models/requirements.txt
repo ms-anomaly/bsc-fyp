@@ -1,0 +1,7 @@
+scikit-learn
+pandas
+bentoml>=1.0.0
+torch
+numpy
+seaborn
+matplotlib

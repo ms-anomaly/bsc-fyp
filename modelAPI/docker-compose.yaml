@@ -1,0 +1,26 @@
+services:
+  bento:
+    image: bentoml/quickstart:latest
+    build:
+      context: bento
+    container_name: bento-fyp
+    ports:
+      - "8888:8888"
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+    - /home/drac98/workspace/fyp/modelAPI/models/:/home/bentoml/models
+    # - /home/drac98/workspace/fyp/app/rootfs/opt:/opt
+    logging: &logging
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "2"
+    networks:
+      - robot-shop
+
+networks:
+  robot-shop:
+    name: robot-shop_robot-shop
+    external: true
+
