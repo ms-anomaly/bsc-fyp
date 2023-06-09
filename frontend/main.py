@@ -20,6 +20,8 @@ if __name__ == "__main__":
 
         data3D = prom.getData()
 
+        # sampleDataNew = [[[1] * 22] * 12] * 24
+
         ######################################
         ####### Send request to Bento ########
         ######################################
@@ -31,7 +33,7 @@ if __name__ == "__main__":
         )
 
         results = response.json()
-        print(results)
+        # print(results)
 
         ######################################
         ####### Calculate SHAP Values ########

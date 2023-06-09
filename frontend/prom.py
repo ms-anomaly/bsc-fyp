@@ -11,13 +11,15 @@ def getData():
         lastVals = [0] * len(const.cumulative_cols)
 
         timeSteps = 24
-        period = [ [[0] * 20] * 12 ] * 24
+        period = [ [[0] * 22] * 12 ] * 24
 
         ### Creating the 3D input: 24x12x20  (new model: 24x12x21) ###
 
         current_timestamp = datetime.datetime.now().timestamp()
         start_timestamp = datetime.datetime.fromtimestamp(current_timestamp-120).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-        end_timestamp = datetime.datetime.fromtimestamp(current_timestamp-5).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        end_timestamp = datetime.datetime.fromtimestamp(current_timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        window_5min_timestamp = datetime.datetime.fromtimestamp(current_timestamp-300).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
+        window_30min_timestamp = datetime.datetime.fromtimestamp(current_timestamp-1800).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
 
         # Iterate for 24 time steps (2 minutes)
         for step in range(1):
@@ -27,7 +29,8 @@ def getData():
                 first = True
 
                 # Iterate for each feature in a service
-                for n, feature in enumerate(const.cumulative_cols):
+                n = 0
+                for _, feature in enumerate(const.cumulative_cols + const.other_cols):
                     q = '{0}{{name="{1}"}}'.format(feature, service)
                     # response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, params={'query': q, 'time': datetime.datetime.fromtimestamp(current_timestamp-5*step).strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
 
@@ -46,39 +49,149 @@ def getData():
                     # print(results)
                     dataV = results['data']
 
-                    # # DEBUG: Print service name
-                    # if first:
-                    #     print(dataV['result'][0]['metric']['name'])
-                    #     first = False
+                    # DEBUG: Print all 19 values of a feature
+                    print(m, n,": ", end="")
+                    periodData = dataV['result'][0]['values']
 
-                    # # DEBUG: Print each feature and its associated value
-                    # if results['status']=="success":
-                    #     print("-",dataV['result'][0]['metric']['__name__'], ':', dataV['result'][0]['value'])
-                    #     print('\n\n\n')
-                    # else:
-                    #     print("Query failed: Poll {0} feature of service {1}".format(feature, service))
+                    if feature in const.cumulative_cols:
+                        for k in range(24):                        
+                            period[k][m][n] = float(periodData[k+1][1]) - float(periodData[k][1]) 
+                            print("{:0.4f}".format(period[k][m][n]), end=" ")
+                    else:
+                        for k in range(24):                        
+                            period[k][m][n] = float(periodData[k][1]) 
+                            print("{:0.4f}".format(period[k][m][n]), end=" ")
 
-                    # period[step][m][n] = dataV['result'][0]['value'][0]
+                    # DEBUG
+                    print('\n')
+                    
+                    n += 1
 
-                    # # DEBUG: Print all 24 values of a feature
-                    # print(m, n,": ", end="")
-                    # for k, val in enumerate(dataV['result'][0]['values']):
-                    #     print(val[0], end=" ")
-                    #     period[k][m][n] = val[0]
-                    # print("\n")
+                if const.rt_metrics[m][0] !=0:
+                    # RT Step sum
+                    for rt in const.rt_metrics[m]:
+                        q = '{0}'.format(rt)
 
+                        # Start and end times are inclusive in range query
+                        response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_RANGE_QUERY, 
+                                                params={
+                                                    'query': q,
+                                                    'start': start_timestamp,
+                                                    'end': end_timestamp,
+                                                    'step':'5s'
+                                                    })
 
-                    # oneServ.append(dataV['result'][0]['value'][0])
+                        results = response.json()
+                        # DEBUG
+                        # print(results)
+                        dataV = results['data']
+                        print(dataV['result'][0]['values'])
+                        periodData = dataV['result'][0]['values']
 
+                        for k in range(24):                        
+                            period[k][m][n] += periodData[k][1]
 
-                for rt in const.other_cols:
-                    pass
+                    # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
 
-                for rt in const.rt_metrics:
-                    pass
+                    n += 1
+
+                    # RT 5min Window sum
+                    for rt in const.rt_metrics[m]:
+                        q = '{0}'.format(rt)
+
+                        # Start and end times are inclusive in range query
+                        response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_RANGE_QUERY, 
+                                                params={
+                                                    'query': q,
+                                                    'start': window_5min_timestamp,
+                                                    'end': end_timestamp,
+                                                    'step':'5s'
+                                                    })
+
+                        results = response.json()
+                        # DEBUG
+                        # print(results)
+                        dataV = results['data']
+                        print(dataV['result'][0]['values'])
+                        periodData = dataV['result'][0]['values']
+
+                        for k in range(12*5):                        
+                            period[k][m][n] += periodData[k][1]
+
+                    # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
+
+                    n += 1
+
+                    # RT 30min Window sum
+                    for rt in const.rt_metrics[m]:
+                        q = '{0}'.format(rt)
+
+                        # Start and end times are inclusive in range query
+                        response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_RANGE_QUERY, 
+                                                params={
+                                                    'query': q,
+                                                    'start': window_30min_timestamp,
+                                                    'end': end_timestamp,
+                                                    'step':'5s'
+                                                    })
+
+                        results = response.json()
+                        # DEBUG
+                        # print(results)
+                        dataV = results['data']
+                        print(dataV['result'][0]['values'])
+                        periodData = dataV['result'][0]['values']
+
+                        for k in range(12*30):                        
+                            period[k][m][n] += periodData[k][1]
+
+                    # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
+
+                    n += 1
                 
-                # print('\n\n\n')
-                # print('\n\n\n')
-        
-        return period
+                else:
+                    period[k][m][n] = 0
+                    # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
+                    n += 1
+                    period[k][m][n] = 0
+                                        # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
+
+                    n += 1
+                    period[k][m][n] = 0
+                    # DEBUG: Print RT values of a feature
+                    print(m, n,": ", end="")
+                    for k in range(24):                        
+                        print(period[k][m][n], end=" ")
+                    # DEBUG
+                    print('\n')
+
+
+                break
+
+        # return period
 
