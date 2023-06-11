@@ -39,6 +39,8 @@ features = cumulative_cols + other_cols
 
 services = ['payment', 'shipping', 'redis', 'mongodb', 'dispatch', 'rabbitmq', 'user', 'mysql', 'catalogue', 'ratings', 'web', 'cart']
 
+cols_with_rt = features + ['sum','ma','ma30']
+
 rt_metrics = [
     [0],
     ['rt_payment_get_user_sum','rt_payment_post_user_sum'],

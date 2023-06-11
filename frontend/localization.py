@@ -275,10 +275,45 @@ cols_with_rt = cols + ['sum','ma','ma20']
 
 
 class Localize():
-  def __init__(self,model_path,sigmoid_func,threshold=3.5):
-    model = torch.load(model_path)
+  def __init__(self,sigmoid_func,threshold=3.5):
+    num_nodes = 12
+    period = 24
+
+    num_heads = 4 # number of GAT heads
+    input_features_size = 22
+    gat_out_size = 24 
+
+    lstm_out_size = 20*num_nodes #20*12
+    num_layers = 4 # number of LSTM layers
+
+    linear_out_size = 256 # 24*12
+    reconstruct_hidden_size1 = 128
+    reconstruct_hidden_size2 = 64
+
+    num_epochs = 30 # number of training epochs
+    batch_size = 504 # size of each training batch
+    num_nodes = 12
+    period = 24
+
+    num_heads = 4 # number of GAT heads
+    input_features_size = 22
+    gat_out_size = 24 
+
+    lstm_out_size = 20*num_nodes #20*12
+    num_layers = 4 # number of LSTM layers
+
+    linear_out_size = 256 # 24*12
+    reconstruct_hidden_size1 = 128
+    reconstruct_hidden_size2 = 64
+
+    num_epochs = 30 # number of training epochs
+    batch_size = 504 # size of each training batch
+
+    model = gat_lstm_autoencoder(num_nodes,input_features_size,gat_out_size,lstm_out_size,linear_out_size,reconstruct_hidden_size1,reconstruct_hidden_size2,num_layers,num_heads,batch_size,period)
+
+
     self.explainer = DeepExplainer(model,torch.ones([24,12,22]))
-    file = open('explainer.pkl', 'rb')
+    file = open('model/explainer.pkl', 'rb')
     self.explainer = pickle.load(file)
     self.sig = sigmoid_func
     self.threshold = threshold
@@ -286,10 +321,14 @@ class Localize():
   def localize_anomaly(self,period,predictions):
     # period = [24,12,22] input data tensor
     # predictions = [24] predictions tensor  eg [5.6,2,7,8.9,10,1,9,1.9,0.2,...]
-    results = sig(predictions-self.threshold)
-    b = results > 0.5
-    detected_anom_timesteps = b.nonzero()
+    predictions = predictions.squeeze()
+    results = self.sig(predictions-self.threshold)
+    b = results > self.threshold
+    detected_anom_timesteps = b.nonzero().squeeze()
+    print(results.shape)
+    print(b.shape)
     print(detected_anom_timesteps.shape)
+    
     shap_values = self.explainer.shap_values(period)
     shap_values = np.stack(shap_values, axis=0)
     shap_vals_cpy = shap_values
@@ -309,27 +348,27 @@ class Localize():
     feature_id = [np.fabs(sum_shap_values)[service_ids,:].argsort()[-1] for service_ids in top_4_anom_service]
     return top_4_anom_service, feature_id
 
-if __name__ == "__main__":
-    # TESTING CODE
+# if __name__ == "__main__":
+#     # TESTING CODE
 
-    # USE LOADED MODEL HERE.
-    model = gat_lstm_autoencoder(num_nodes,input_features_size,gat_out_size,lstm_out_size,linear_out_size,reconstruct_hidden_size1,reconstruct_hidden_size2,num_layers,num_heads,batch_size,period)
-    explainer = DeepExplainer(model,torch.ones([24,12,22]))
-    file = open('explainer.pkl', 'rb')
-    explainer = pickle.load(file)
-    threshold = 3.5
-    sig = nn.Sigmoid()
+#     # USE LOADED MODEL HERE.
+#     model = gat_lstm_autoencoder(num_nodes,input_features_size,gat_out_size,lstm_out_size,linear_out_size,reconstruct_hidden_size1,reconstruct_hidden_size2,num_layers,num_heads,batch_size,period)
+#     explainer = DeepExplainer(model,torch.ones([24,12,22]))
+#     file = open('explainer.pkl', 'rb')
+#     explainer = pickle.load(file)
+#     threshold = 3.5
+#     sig = nn.Sigmoid()
 
-    anom_instances_df = pd.read_csv("anom_data_instances.csv",index_col=False)
-    anom_instances_df.pop(anom_instances_df.columns[0])
-    print(anom_instances_df.head())
-    anom_instances = torch.tensor(anom_instances_df.values)
-    anom_instances =anom_instances.reshape(-1,12,22)
-    print(anom_instances.shape)
+#     anom_instances_df = pd.read_csv("anom_data_instances.csv",index_col=False)
+#     anom_instances_df.pop(anom_instances_df.columns[0])
+#     print(anom_instances_df.head())
+#     anom_instances = torch.tensor(anom_instances_df.values)
+#     anom_instances =anom_instances.reshape(-1,12,22)
+#     print(anom_instances.shape)
 
-    localizer = Localize(model,sig)
-    suspect_services, suspect_features = localizer.localize_anomaly(anom_instances[:24,:,:].to(torch.float32),torch.Tensor([5]*24))
-    for c,x in enumerate(suspect_services):
-        print(services[x], cols_with_rt[suspect_features[c]])
+#     localizer = Localize(model,sig)
+#     suspect_services, suspect_features = localizer.localize_anomaly(anom_instances[:24,:,:].to(torch.float32),torch.Tensor([5]*24))
+#     for c,x in enumerate(suspect_services):
+#         print(services[x], cols_with_rt[suspect_features[c]])
 
 

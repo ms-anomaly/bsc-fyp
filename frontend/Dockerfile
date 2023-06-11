@@ -2,11 +2,15 @@ FROM python:3.9
 
 USER root
 
-# RUN pip install numpy
+RUN pip install requests networkx matplotlib
+
+RUN pip install numpy
+
+RUN pip install torch
 
 # RUN pip install pandas
 
-# RUN pip install torch
+RUN pip install shap
 
 WORKDIR /app
 
