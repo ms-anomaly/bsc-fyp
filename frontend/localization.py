@@ -313,7 +313,7 @@ class Localize():
 
 
     self.explainer = DeepExplainer(model,torch.ones([24,12,22]))
-    file = open('model/explainer.pkl', 'rb')
+    file = open('model/explainer_30_epoch.pkl', 'rb')
     self.explainer = pickle.load(file)
     self.sig = sigmoid_func
     self.threshold = threshold
