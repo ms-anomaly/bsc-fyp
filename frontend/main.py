@@ -9,12 +9,25 @@ import random
 import torch
 import torch.nn as nn
 import numpy as np
+import pandas
 
 import const
 import prom
 import frontend
 import localization
 from localization import *
+
+mean_train = pandas.read_csv("model/mean.csv")
+mean_train.pop(mean_train.columns[0])
+# print(mean_train.pop(mean_train.columns[0]).head)
+std_train = pandas.read_csv("model/std_d.csv")
+std_train.pop(std_train.columns[0])
+
+mean_train_t = torch.tensor(mean_train.values)
+std_train_t = torch.tensor(std_train.values)
+
+# print("mean shape:", mean_train_t.shape)
+# print("std shape:", std_train_t.shape)
 
 if __name__ == "__main__":
     while True:
@@ -23,6 +36,8 @@ if __name__ == "__main__":
         ######################################
 
         data3D = prom.getData()
+        data_instance = torch.tensor(data3D) - mean_train_t
+        data_instance = torch.tensor(data3D) / std_train_t
 
         # sampleDataNew = [[[1] * 22] * 12] * 24
 
@@ -32,12 +47,12 @@ if __name__ == "__main__":
 
         response = requests.post(
             prom.BENTOML + 'classify', 
-            data=json.dumps(data3D),
+            data=json.dumps(data_instance.tolist()),
             headers={"content-type":"application/json"}
         )
 
         results = response.json()
-        print(results)
+        # print(results)
 
         ######################################
         ####### Calculate SHAP Values ########
@@ -53,7 +68,7 @@ if __name__ == "__main__":
             # model = "model/explainer.pkl"
             localizer = localization.Localize(sig)
             
-            suspect_services, suspect_features = localizer.localize_anomaly(torch.tensor(data3D).to(torch.float32) , torch.tensor(results).to(torch.float32))
+            suspect_services, suspect_features = localizer.localize_anomaly_voting(data_instance.to(torch.float32) , torch.tensor(results).to(torch.float32))
 
         print(const.services[suspect_services[-1]])
         print(const.cols_with_rt[suspect_features[-1]])

@@ -275,78 +275,130 @@ cols_with_rt = cols + ['sum','ma','ma20']
 
 
 class Localize():
-  def __init__(self,sigmoid_func,threshold=3.5):
-    num_nodes = 12
-    period = 24
+    def __init__(self,sigmoid_func,threshold=3.5):
+        num_nodes = 12
+        period = 24
 
-    num_heads = 4 # number of GAT heads
-    input_features_size = 22
-    gat_out_size = 24 
+        num_heads = 4 # number of GAT heads
+        input_features_size = 22
+        gat_out_size = 24 
 
-    lstm_out_size = 20*num_nodes #20*12
-    num_layers = 4 # number of LSTM layers
+        lstm_out_size = 20*num_nodes #20*12
+        num_layers = 4 # number of LSTM layers
 
-    linear_out_size = 256 # 24*12
-    reconstruct_hidden_size1 = 128
-    reconstruct_hidden_size2 = 64
+        linear_out_size = 256 # 24*12
+        reconstruct_hidden_size1 = 128
+        reconstruct_hidden_size2 = 64
 
-    num_epochs = 30 # number of training epochs
-    batch_size = 504 # size of each training batch
-    num_nodes = 12
-    period = 24
+        num_epochs = 30 # number of training epochs
+        batch_size = 504 # size of each training batch
+        num_nodes = 12
+        period = 24
 
-    num_heads = 4 # number of GAT heads
-    input_features_size = 22
-    gat_out_size = 24 
+        num_heads = 4 # number of GAT heads
+        input_features_size = 22
+        gat_out_size = 24 
 
-    lstm_out_size = 20*num_nodes #20*12
-    num_layers = 4 # number of LSTM layers
+        lstm_out_size = 20*num_nodes #20*12
+        num_layers = 4 # number of LSTM layers
 
-    linear_out_size = 256 # 24*12
-    reconstruct_hidden_size1 = 128
-    reconstruct_hidden_size2 = 64
+        linear_out_size = 256 # 24*12
+        reconstruct_hidden_size1 = 128
+        reconstruct_hidden_size2 = 64
 
-    num_epochs = 30 # number of training epochs
-    batch_size = 504 # size of each training batch
+        num_epochs = 30 # number of training epochs
+        batch_size = 504 # size of each training batch
 
-    model = gat_lstm_autoencoder(num_nodes,input_features_size,gat_out_size,lstm_out_size,linear_out_size,reconstruct_hidden_size1,reconstruct_hidden_size2,num_layers,num_heads,batch_size,period)
+        model = gat_lstm_autoencoder(num_nodes,input_features_size,gat_out_size,lstm_out_size,linear_out_size,reconstruct_hidden_size1,reconstruct_hidden_size2,num_layers,num_heads,batch_size,period)
 
 
-    self.explainer = DeepExplainer(model,torch.ones([24,12,22]))
-    file = open('model/explainer_30_epoch.pkl', 'rb')
-    self.explainer = pickle.load(file)
-    self.sig = sigmoid_func
-    self.threshold = threshold
+        self.explainer = DeepExplainer(model,torch.ones([24,12,22]))
+        file = open('model/explainer_30_epoch.pkl', 'rb')
+        self.explainer = pickle.load(file)
+        self.sig = sigmoid_func
+        self.threshold = threshold
 
-  def localize_anomaly(self,period,predictions):
-    # period = [24,12,22] input data tensor
-    # predictions = [24] predictions tensor  eg [5.6,2,7,8.9,10,1,9,1.9,0.2,...]
-    predictions = predictions.squeeze()
-    results = self.sig(predictions-self.threshold)
-    b = results > self.threshold
-    detected_anom_timesteps = b.nonzero().squeeze()
-    print(results.shape)
-    print(b.shape)
-    print(detected_anom_timesteps.shape)
-    
-    shap_values = self.explainer.shap_values(period)
-    shap_values = np.stack(shap_values, axis=0)
-    shap_vals_cpy = shap_values
-    heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/shap_vals_cpy[i].sum() for i in range(shap_vals_cpy.shape[0])])
-    print(heat_maps_per_timestep.shape)
-    # get shap values of detected anomalies
-    shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps].squeeze()
-    print(shap_values_of_detected_anomalies.shape)
-    # sum features of all detected anomalies
-    sum_shap_values  = np.sum(shap_values_of_detected_anomalies,axis=0)
-    print(sum_shap_values.shape)
-    # aggregate over features to find the anomalous node
-    sum_services_shap_values  = np.sum(np.fabs(sum_shap_values),axis=1)
-    print(sum_services_shap_values.shape)
-    top_4_anom_service =  sum_services_shap_values.argsort()[-4:] # Get top 4 because each service is dependent on at most 4 other services
-    print("top 4 anom services ",top_4_anom_service)
-    feature_id = [np.fabs(sum_shap_values)[service_ids,:].argsort()[-1] for service_ids in top_4_anom_service]
-    return top_4_anom_service, feature_id
+    def localize_anomaly(self,period,predictions):
+        # period = [24,12,22] input data tensor
+        # predictions = [24] predictions tensor  eg [5.6,2,7,8.9,10,1,9,1.9,0.2,...]
+        predictions = predictions.squeeze()
+        results = self.sig(predictions-self.threshold)
+        b = results > self.threshold
+        detected_anom_timesteps = b.nonzero().squeeze()
+        print(results.shape)
+        print(b.shape)
+        print(detected_anom_timesteps.shape)
+        
+        shap_values = self.explainer.shap_values(period)
+        shap_values = np.stack(shap_values, axis=0)
+        shap_vals_cpy = shap_values
+        heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/shap_vals_cpy[i].sum() for i in range(shap_vals_cpy.shape[0])])
+        print(heat_maps_per_timestep.shape)
+        # get shap values of detected anomalies
+        shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps].squeeze()
+        print(shap_values_of_detected_anomalies.shape)
+        # sum features of all detected anomalies
+        sum_shap_values  = np.sum(shap_values_of_detected_anomalies,axis=0)
+        print(sum_shap_values.shape)
+        # aggregate over features to find the anomalous node
+        sum_services_shap_values  = np.sum(np.fabs(sum_shap_values),axis=1)
+        print(sum_services_shap_values.shape)
+        top_4_anom_service =  sum_services_shap_values.argsort()[-4:] # Get top 4 because each service is dependent on at most 4 other services
+        print("top 4 anom services ",top_4_anom_service)
+        feature_id = [np.fabs(sum_shap_values)[service_ids,:].argsort()[-1] for service_ids in top_4_anom_service]
+        return top_4_anom_service, feature_id
+  
+    def localize_anomaly_voting(self,period,predictions):
+        # period = [24,12,22] input data tensor
+        # predictions = [24] predictions tensor  eg [5.6,2,7,8.9,10,1,9,1.9,0.2,...]
+        predictions = predictions.squeeze()
+        results = self.sig(predictions-self.threshold)
+        b = results > self.threshold
+        detected_anom_timesteps = b.nonzero().squeeze()
+        print(results.shape)
+        print(b.shape)
+        print(detected_anom_timesteps.shape)
+        
+        shap_values = self.explainer.shap_values(period)
+        shap_values = np.stack(shap_values, axis=0)
+        shap_vals_cpy = shap_values
+        heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/np.fabs(shap_vals_cpy[i]).sum() for i in range(shap_vals_cpy.shape[0])])
+        # heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/shap_vals_cpy[i].sum() for i in range(shap_vals_cpy.shape[0])])
+        print(heat_maps_per_timestep.shape)
+        # get shap values of detected anomalies
+        shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps,:,:]
+        print(shap_values_of_detected_anomalies.shape)
+
+        votes_1 = [0] * 12
+        votes_2 = [0] * 12
+        votes_3 = [0] * 12
+        votes_4 = [0] * 12
+        sus_features = [0] * 4
+        for x in shap_values_of_detected_anomalies:
+            max_idx_instance = np.fabs(x.reshape(-1)).argsort()
+            i = -1
+            node_1 = max_idx_instance[i]//22
+            while (node_1==max_idx_instance[i]//22):
+                i-=1
+            node_2 = max_idx_instance[i]//22
+            while (node_2==max_idx_instance[i]//22 or node_1==max_idx_instance[i]//22):
+                i-=1
+            node_3 = max_idx_instance[i]//22
+            while (node_3==max_idx_instance[i]//22 or node_2==max_idx_instance[i]//22 or node_1==max_idx_instance[i]//22):
+                i-=1
+            node_4 = max_idx_instance[i]//22
+            votes_1[node_1]+=1
+            votes_2[node_2]+=1
+            votes_3[node_3]+=1
+            votes_4[node_4]+=1
+
+        top_4_anom_service = [votes_4.index(max(votes_4)),votes_3.index(max(votes_3)),votes_2.index(max(votes_2)),votes_1.index(max(votes_1))]
+        sum_shap_values  = np.sum(np.fabs(shap_values_of_detected_anomalies),axis=0)
+        
+        print(sum_shap_values.shape)
+        print(sum_shap_values[top_4_anom_service[-1],:].shape)
+        feature_id = [sum_shap_values[node,:].argsort()[-1] for node in top_4_anom_service]
+        return top_4_anom_service, feature_id
 
 # if __name__ == "__main__":
 #     # TESTING CODE

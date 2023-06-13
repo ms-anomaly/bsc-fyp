@@ -8,7 +8,7 @@ RUN pip install numpy
 
 RUN pip install torch
 
-# RUN pip install pandas
+RUN pip install pandas
 
 RUN pip install shap
 
