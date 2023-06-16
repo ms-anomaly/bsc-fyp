@@ -70,18 +70,18 @@ if __name__ == "__main__":
             
             suspect_services, suspect_features = localizer.localize_anomaly_voting(data_instance.to(torch.float32) , torch.tensor(results).to(torch.float32))
 
-        print(const.services[suspect_services[-1]])
-        print(const.cols_with_rt[suspect_features[-1]])
+            print(const.services[suspect_services[-1]])
+            print(const.cols_with_rt[suspect_features[-1]])
 
-        ######################################
-        ####### Output to front-end ########
-        ######################################
+            ######################################
+            ####### Output to front-end ########
+            ######################################
 
-        node_colors = dict.fromkeys(const.services, 'lightgreen')
-        node_colors[const.services[suspect_services[-1]]] = 'red'
+            node_colors = dict.fromkeys(const.services, 'lightgreen')
+            node_colors[const.services[suspect_services[-1]]] = 'red'
 
-        print(node_colors)
+            print(node_colors)
 
-        frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
+            frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
 
         break
