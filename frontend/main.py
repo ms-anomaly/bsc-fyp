@@ -84,4 +84,7 @@ if __name__ == "__main__":
 
             frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
 
+
+        time.sleep(30)        
+
         break
