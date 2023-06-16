@@ -18,6 +18,8 @@ import torch
 import numpy
 import torch.nn as nn
 import torch.nn.functional as F
+import seaborn as sns
+import os
 
 # class definitions
 class GATLayer(nn.Module):
@@ -365,7 +367,14 @@ class Localize():
         heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/np.fabs(shap_vals_cpy[i]).sum() for i in range(shap_vals_cpy.shape[0])])
         # heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/shap_vals_cpy[i].sum() for i in range(shap_vals_cpy.shape[0])])
         print(heat_maps_per_timestep.shape)
-        # get shap values of detected anomalies
+        heatmap = np.sum(heat_maps_per_timestep,axis=0)
+        ax = sns.heatmap(heatmap,linewidth=0.5)
+        fig = ax.get_figure()
+
+        if not os.path.exists('plots/'):
+            os.mkdir('plots/')
+        fig.savefig('plots/heatmap.png')
+            # get shap values of detected anomalies
         shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps,:,:]
         print(shap_values_of_detected_anomalies.shape)
 

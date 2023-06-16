@@ -57,8 +57,11 @@ def getData():
                         period[k][m][n] = float(periodData[k+1][1]) - float(periodData[k][1]) 
                         # print("{:0.4f}".format(period[k][m][n]), end=" ")
                 else:
-                    for k in range(24):                        
-                        period[k][m][n] = float(periodData[k][1]) 
+                    for k in range(24):
+                        if periodData[k][1] == "" and k!=0:
+                            period[k][m][n] = float(periodData[k-1][1])
+                        else:
+                            period[k][m][n] = float(periodData[k][1])
                         # print("{:0.4f}".format(period[k][m][n]), end=" ")
 
                 # DEBUG

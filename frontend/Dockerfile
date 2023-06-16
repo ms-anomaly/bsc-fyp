@@ -12,6 +12,8 @@ RUN pip install pandas
 
 RUN pip install shap
 
+RUN pip install seaborn
+
 EXPOSE 80
 
 WORKDIR /app
