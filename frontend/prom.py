@@ -51,6 +51,7 @@ def getData():
                 if len(dataV['result']) < 1:
                     break
                 periodData = dataV['result'][0]['values']
+                # print(periodData)
 
                 if feature in const.cumulative_cols:
                     for k in range(24):                        
@@ -186,30 +187,32 @@ def getData():
                 n += 1
             
             else:
-                period[k][m][n] = 0
-                # DEBUG: Print RT values of a feature
-                # print(m, n,": ", end="")
-                # for k in range(24):                        
-                #     print(period[k][m][n], end=" ")
-                # DEBUG
-                # print('\n')
-                n += 1
-                period[k][m][n] = 0
-                                    # DEBUG: Print RT values of a feature
-                # print(m, n,": ", end="")
-                # for k in range(24):                        
-                #     print(period[k][m][n], end=" ")
-                # DEBUG
-                # print('\n')
+                for k in range (24):
+                    period[k][m][n] = 0
+                    # DEBUG: Print RT values of a feature
+                    # print(m, n,": ", end="")
+                    # for k in range(24):                        
+                    #     print(period[k][m][n], end=" ")
+                    # DEBUG
+                    # print('\n')
+                    n += 1
+                    period[k][m][n] = 0
+                                        # DEBUG: Print RT values of a feature
+                    # print(m, n,": ", end="")
+                    # for k in range(24):                        
+                    #     print(period[k][m][n], end=" ")
+                    # DEBUG
+                    # print('\n')
 
-                n += 1
-                period[k][m][n] = 0
-                # DEBUG: Print RT values of a feature
-                # print(m, n,": ", end="")
-                # for k in range(24):                        
-                #     print(period[k][m][n], end=" ")
-                # DEBUG
-                # print('\n')
+                    n += 1
+                    period[k][m][n] = 0
+                    # DEBUG: Print RT values of a feature
+                    # print(m, n,": ", end="")
+                    # for k in range(24):                        
+                    #     print(period[k][m][n], end=" ")
+                    # DEBUG
+                    # print('\n')
+                    n -= 2
 
 
             # break
