@@ -79,6 +79,8 @@ if __name__ == "__main__":
 
             node_colors = dict.fromkeys(const.services, 'lightgreen')
             node_colors[const.services[suspect_services[-1]]] = 'red'
+            node_colors[const.services[suspect_services[-2]]] = 'mistyrose'
+            node_colors[const.services[suspect_services[-3]]] = 'orange'
 
             print(node_colors)
 
