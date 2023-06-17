@@ -83,8 +83,16 @@ if __name__ == "__main__":
             node_colors[const.services[suspect_services[-3]]] = 'orange'
 
             print(node_colors)
+            #DEBUG
+            print("Found anomalies")
 
             frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
+        else:
+            node_colors = dict.fromkeys(const.services, 'lightgreen')
+            frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
+            #DEBUG
+            print("No anomalies")
+
 
 
         time.sleep(30)        
