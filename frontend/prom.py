@@ -107,6 +107,9 @@ def getData():
                 df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
                 dfs[service] = df
             except:
+                df_rt = pd.DataFrame(5000, index=range(384), columns=[rt_feature])
+                df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
+                dfs[service] = df
                 print("rt sum error")
 
         for service in const.containers:
