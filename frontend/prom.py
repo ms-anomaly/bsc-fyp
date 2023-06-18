@@ -55,7 +55,7 @@ def getData():
                     break
                 periodData = dataV['result'][0]['values']
                 try:
-                    df = pd.DataFrame(periodData,columns=[feature])
+                    df = pd.DataFrame(periodData,columns=['time',feature])
                     df = df.fillna(method='ffill')
                     if feature in const.cumulative_cols:
                         df[col] = df[col].diff()
@@ -64,7 +64,7 @@ def getData():
                 except Exception as e:
                     print("Error: ",e)
                     df = pd.DataFrame(0.000001, index=range(384), columns=[feature])
-                arr.append(df)
+                arr.append(df[feature])
             arr_rt = []
             for i,rt_feature in enumerate(const.rt_per_service[service.split('-')[-2]]):
                 q = '{0}'.format(rt_feature)
@@ -87,7 +87,7 @@ def getData():
                 periodData = dataV['result'][0]['values']
                 data30min = [float(i[1]) for i in periodData]
                 try:
-                    df = pd.DataFrame(data30min,columns=[rt_feature])
+                    df = pd.DataFrame(data30min,columns=['time',rt_feature])
                     # df = df.interpolate(method ='linear', limit_direction ='both')
                     df = df.fillna(method='ffill')
                     df = df.fillna(method='bfill')
@@ -98,7 +98,7 @@ def getData():
                 except Exception as e:
                     print("Error: ",e)
                     df = pd.DataFrame(5000, index=range(384), columns=[rt_feature])
-                arr_rt.append(df)
+                arr_rt.append(df[rt_feature])
             
             df = pd.concat(arr,axis=1)
             df_rt = pd.concat(arr_rt,axis=1)
