@@ -81,10 +81,9 @@ anomalies = [
     ]
 
 #['payment 0', 'shipping 1', 'redis 2', 'mongodb 3', 'dispatch 4', 'rabbitmq 5', 'user 6', 'mysql 7', 'catalogue 8', 'ratings 9', 'web 10', 'cart 11']
-serivces = ['payment', 'shipping', 'redis', 'mongo', 'dispatch', 'rabbitmq', 'user', 'mysql', 'catalogue', 'ratings', 'web', 'cart']
 
 rt_per_service = dict()
-for i in serivces:
+for i in services:
     rt_per_service[i] = []
 for metric in metrics:
     callee = metric.split('_')[3]

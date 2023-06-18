@@ -66,7 +66,7 @@ def getData():
                     df = pd.DataFrame(0.000001, index=range(384), columns=[feature])
                 arr.append(df)
             arr_rt = []
-            for i,rt_feature in enumerate(const.rt_per_service[service]):
+            for i,rt_feature in enumerate(const.rt_per_service[service.split('-')[-2]]):
                 q = '{0}'.format(rt_feature)
 
                 # Start and end times are inclusive in range query
