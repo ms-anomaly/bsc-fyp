@@ -45,8 +45,8 @@ if __name__ == "__main__":
         ######################################
 
         data3D = prom.getData()
-        data_instance = torch.tensor(data3D) - mean_train_t
-        data_instance = torch.tensor(data3D) / std_train_t
+        data_instance = data3D - mean_train_t
+        data_instance = data3D / std_train_t
 
         # sampleDataNew = [[[1] * 22] * 12] * 24
 

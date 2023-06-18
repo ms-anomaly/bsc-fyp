@@ -1,6 +1,8 @@
 import const
 import datetime
 import requests
+import pandas as pd
+import torch
 
 PROMETHEUS = 'http://prometheus:9090'
 BENTOML = 'http://bento-fyp:3000/'
@@ -16,15 +18,16 @@ def getData():
         ### Creating the 3D input: 24x12x20  (new model: 24x12x21) ###
 
         current_timestamp = datetime.datetime.now().timestamp()
-        start_timestamp = datetime.datetime.fromtimestamp(current_timestamp-120).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
+        start_timestamp = datetime.datetime.fromtimestamp(current_timestamp-1800-120).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
         end_timestamp = datetime.datetime.fromtimestamp(current_timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         window_30min_timestamp = datetime.datetime.fromtimestamp(current_timestamp-1800).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
 
         print(start_timestamp, end_timestamp)
         # Iterate for each service
+        dfs = dict()
         for m, service in enumerate(const.containers):
             first = True
-
+            arr = []
             # Iterate for each feature in a service
             n = 0
             for _, feature in enumerate(const.cumulative_cols + const.other_cols):
@@ -51,158 +54,82 @@ def getData():
                 if len(dataV['result']) < 1:
                     break
                 periodData = dataV['result'][0]['values']
-                # print(periodData)
+                try:
+                    df = pd.DataFrame(periodData,columns=[feature])
+                    df = df.fillna(method='ffill')
+                    if feature in const.cumulative_cols:
+                        df[col] = df[col].diff()
+                        df[col].loc[df[col] < 0] = 0
+                    # print(periodData)
+                except Exception as e:
+                    print("Error: ",e)
+                    df = pd.DataFrame(0.000001, index=range(384), columns=[feature])
+                arr.append(df)
+            arr_rt = []
+            for i,rt_feature in enumerate(const.rt_per_service[service]):
+                q = '{0}'.format(rt_feature)
 
-                if len(periodData) < 1:
-                    break
+                # Start and end times are inclusive in range query
+                response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_RANGE_QUERY, 
+                                        params={
+                                            'query': q,
+                                            'start': start_timestamp,
+                                            'end': end_timestamp,
+                                            'step':'5s'
+                                            })
 
-                if feature in const.cumulative_cols:
-                    for k in range(24):
-                        try:                        
-                            if periodData[k][1] != "" and periodData[k+1][1]!="":
-                                period[k][m][n] = float(periodData[k+1][1]) - float(periodData[k][1]) 
-                                    # print("{:0.4f}".format(period[k][m][n]), end=" ")
-                            else:
-                                if k!=0:
-                                    period[k][m][n] = period[k-1][m][n]
-                                else:
-                                    i=1
-                                    found = False
-                                    while not found:
-                                        temp_time_1 = current_timestamp-120-5*i
-                                        temp_time_2 = current_timestamp-120-5*(i+1)
-                                        temp_time_str_1 = datetime.datetime.fromtimestamp(temp_time_1).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-                                        temp_time_str_2 = datetime.datetime.fromtimestamp(temp_time_2).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-
-                                        temp_response_1 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
-                                                params={
-                                                    'query': q,
-                                                    'time': temp_time_str_1,
-                                                    })
-                                        temp_response_2 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
-                                                params={
-                                                    'query': q,
-                                                    'time': temp_time_str_2,
-                                                    })
-                                        
-                                        if temp_response_1.json()['data']['result'][0]['value'] != "" and temp_response_2.json()['data']['result'][0]['value'] != "":
-                                            found = True
-                                            i = 0
-                                            period[k][m][n] = float(temp_response_2.json()['data']['result'][0]['value'])-float(temp_response_1.json()['data']['result'][0]['value'])
-                                            
-                                        i += 1
-                        except Exception as e:
-                            print(service, feature, e)
-
-
-                else:
-                    for k in range(24):
-                        try:                        
-                            if periodData[k][1] == "":
-                                    if k!=0:
-                                        period[k][m][n] = float(period[k-1][m][n])
-                                    else:
-                                        i=1
-                                        found = False
-                                        while not found:
-                                            temp_time = current_timestamp-120-5*i
-                                            temp_time_str = datetime.datetime.fromtimestamp(temp_time).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-
-                                            temp_response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
-                                                    params={
-                                                        'query': q,
-                                                        'time': temp_time_str,
-                                                        })
-                                            
-                                            if temp_response.json()['data']['result'][0]['value'] != "":
-                                                found = True
-                                                i = 0
-                                                period[k][m][n] = float(temp_response.json()['data']['result'][0]['value'])
-                                                
-                                            i += 1
-
-                            else:
-                                period[k][m][n] = float(periodData[k][1])
-                                # print("{:0.4f}".format(period[k][m][n]), end=" ")
-                        except Exception as e:
-                            print(service, feature, e)
-
-
+                results = response.json()
                 # DEBUG
-                # print('\n')
+                # print(results)
+                dataV = results['data']
                 
-                n += 1
-
-            if const.rt_metrics[m][0] !=0:
-                # RT 30min Window sum
-                for rt in const.rt_metrics[m]:
-                    q = '{0}'.format(rt)
-
-                    # Start and end times are inclusive in range query
-                    response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_RANGE_QUERY, 
-                                            params={
-                                                'query': q,
-                                                'start': window_30min_timestamp,
-                                                'end': end_timestamp,
-                                                'step':'5s'
-                                                })
-
-                    results = response.json()
-                    # DEBUG
-                    # print(results)
-                    dataV = results['data']
-                    if len(dataV['result']) < 1:
-                        break
-                    # print(dataV['result'][0]['values'])
-                    periodData = dataV['result'][0]['values']
-                    data30min = [float(i[1]) for i in periodData]
-
-                    if len(periodData) < 1:
-                        break
-                            
-                    for k in range(24):
-                        # Assign feature 20,21 and 22 HERE
-                        period[k][m][n] += 0
-
-                # DEBUG: Print RT values of a feature
-                # print(m, n,": ", end="")
-                # for k in range(24):                        
-                #     print(period[k][m][n], end=" ")
-                # DEBUG
-                # print('\n')
-
-                n += 1
+                # print(dataV['result'][0]['values'])
+                periodData = dataV['result'][0]['values']
+                data30min = [float(i[1]) for i in periodData]
+                try:
+                    df = pd.DataFrame(data30min,columns=[rt_feature])
+                    # df = df.interpolate(method ='linear', limit_direction ='both')
+                    df = df.fillna(method='ffill')
+                    df = df.fillna(method='bfill')
+                    for col in df.columns:
+                        if col.split('_')[-1] == 'sum':
+                            df[col] = df[col].diff()
+                            df[col].loc[df[col] < 0] = 0
+                except Exception as e:
+                    print("Error: ",e)
+                    df = pd.DataFrame(5000, index=range(384), columns=[rt_feature])
+                arr_rt.append(df)
             
-            else:
-                for k in range (24):
-                    period[k][m][n] = 0
-                    # DEBUG: Print RT values of a feature
-                    # print(m, n,": ", end="")
-                    # for k in range(24):                        
-                    #     print(period[k][m][n], end=" ")
-                    # DEBUG
-                    # print('\n')
-                    n += 1
-                    period[k][m][n] = 0
-                                        # DEBUG: Print RT values of a feature
-                    # print(m, n,": ", end="")
-                    # for k in range(24):                        
-                    #     print(period[k][m][n], end=" ")
-                    # DEBUG
-                    # print('\n')
+            df = pd.concat(arr,axis=1)
+            df_rt = pd.concat(arr_rt,axis=1)
+            df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
+            dfs[service] = df
 
-                    n += 1
-                    period[k][m][n] = 0
-                    # DEBUG: Print RT values of a feature
-                    # print(m, n,": ", end="")
-                    # for k in range(24):                        
-                    #     print(period[k][m][n], end=" ")
-                    # DEBUG
-                    # print('\n')
-                    n -= 2
+        for service in const.containers:
+            
+            try:
+                ma = df['sum'].rolling(window=24,min_periods=1).mean()
+                q = pd.DataFrame(sum)
+                df['ma']= df['sum'] - ma
 
+                ma20 = df['sum'].rolling(window=24*10,min_periods=1).mean()
+                df['ma20']= df['sum'] - ma20
+            except Exception as e:
+                print("Error: ",e)
+                df['sum'] = pd.Series([0] * 384)            
+                df['ma'] = pd.Series([0] * 384)           
+                df['ma20'] = pd.Series([0] * 384)  
 
-            # break
+        period = torch.tensor(q.values.tolist())[-24:]       
+            
+                
+                        
+                
+            
+            
 
         return period
 
+if __name__=="__main__":
+    a = getData()
+    print(len(a))
