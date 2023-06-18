@@ -369,20 +369,21 @@ class Localize():
         # heat_maps_per_timestep = np.stack([shap_vals_cpy[i]/shap_vals_cpy[i].sum() for i in range(shap_vals_cpy.shape[0])])
         print(heat_maps_per_timestep.shape)
         heatmap = np.sum(heat_maps_per_timestep,axis=0)
-        plt.imshow(heatmap)
-        plt.title("SHAP Value Heat Map")
-        plt.savefig("plots/heatmap.png")
-        # ax = sns.heatmap(heatmap,linewidth=0.5)
-        # fig = ax.get_figure()
-        # del ax
+        # plt.imshow(heatmap, cmap="pink")
+        # plt.title("SHAP Value Heat Map")
+        # plt.savefig("plots/heatmap.png")
+        ax = sns.heatmap(heatmap,linewidth=0.5)
+        fig = ax.get_figure()
+        del ax
 
-        # if not os.path.exists('plots/'):
-        #     os.mkdir('plots/')
-        # if os.path.exists('plots/heatmap.png'):
-        #     os.remove('plots/heatmap.png')
-        # fig.savefig('plots/heatmap.png')
-        # del fig
-            # get shap values of detected anomalies
+        if not os.path.exists('plots/'):
+            os.mkdir('plots/')
+        if os.path.exists('plots/heatmap.png'):
+            os.remove('plots/heatmap.png')
+        fig.savefig('plots/heatmap.png')
+        del fig
+        plt.close()
+        # get shap values of detected anomalies
         shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps,:,:]
         print(shap_values_of_detected_anomalies.shape)
 

@@ -31,7 +31,7 @@ std_train_t = torch.tensor(std_train.values)
 # print("std shape:", std_train_t.shape)
 
 heatmap = np.zeros((12,22))
-plt.imshow(heatmap)
+plt.imshow(heatmap, cmap="pink")
 plt.title("SHAP Value Heat Map")
 plt.savefig("plots/heatmap.png")
 
