@@ -123,9 +123,9 @@ def getData():
                 dfs[service]['ma20']= dfs[service]['sum'] - ma20
             except Exception as e:
                 print("Error3: ",e)
-                dfs[service]['sum'] = pd.Series([0] * 384)            
-                dfs[service]['ma'] = pd.Series([0] * 384)           
-                dfs[service]['ma20'] = pd.Series([0] * 384)  
+                dfs[service]['sum'] = pd.DataFrame(0.001, index=range(384), columns=[rt_feature])           
+                dfs[service]['ma'] = pd.DataFrame(0.001, index=range(384), columns=[rt_feature])           
+                dfs[service]['ma20'] = pd.DataFrame(0.001, index=range(384), columns=[rt_feature]) 
         t = []
         for i in dfs.keys():
             
