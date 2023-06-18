@@ -62,7 +62,7 @@ def getData():
                         df[feature].loc[df[feature] < 0] = 0
                     # print(periodData)
                 except Exception as e:
-                    print("Error: ",e)
+                    print("Error1: ",e)
                     df = pd.DataFrame(0.000001, index=range(384), columns=[feature])
                 arr.append(df[feature])
             arr_rt = []
@@ -96,7 +96,7 @@ def getData():
                             df[col] = df[col].astype(float).diff()
                             df[col].loc[df[col] < 0] = 0
                 except Exception as e:
-                    print("Error: ",e)
+                    print("Error2: ",e)
                     df = pd.DataFrame(5000, index=range(384), columns=[rt_feature])
                 arr_rt.append(df[rt_feature])
             
@@ -118,12 +118,15 @@ def getData():
                 ma20 = df['sum'].rolling(window=24*10,min_periods=1).mean()
                 df['ma20']= df['sum'] - ma20
             except Exception as e:
-                print("Error: ",e)
+                print("Error3: ",e)
                 df['sum'] = pd.Series([0] * 384)            
                 df['ma'] = pd.Series([0] * 384)           
                 df['ma20'] = pd.Series([0] * 384)  
-
-        period = torch.tensor(q.values.tolist())[-24:]       
+        t = []
+        for i in dfs.keys():
+            
+            t.append(torch.tensor(dfs[i].values.tolist())[-24:])
+        period = torch.stack(t)
             
                 
                         
