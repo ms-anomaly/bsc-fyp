@@ -58,7 +58,7 @@ def getData():
                     df = pd.DataFrame(periodData,columns=['time',feature])
                     df = df.fillna(method='ffill')
                     if feature in const.cumulative_cols:
-                        df[feature] = df[feature].diff()
+                        df[feature] = df[feature].astype(float).diff()
                         df[feature].loc[df[feature] < 0] = 0
                     # print(periodData)
                 except Exception as e:
@@ -93,7 +93,7 @@ def getData():
                     df = df.fillna(method='bfill')
                     for col in df.columns:
                         if col.split('_')[-1] == 'sum':
-                            df[col] = df[col].diff()
+                            df[col] = df[col].astype(float).diff()
                             df[col].loc[df[col] < 0] = 0
                 except Exception as e:
                     print("Error: ",e)
