@@ -31,3 +31,4 @@ def drawServiceGraph(adj_matrix, labels, node_clr, path):
     plt.title("Service Graph")
     plt.axis("off")
     plt.savefig(path)
+    plt.close()
