@@ -56,7 +56,8 @@ def getData():
                 periodData = dataV['result'][0]['values']
                 try:
                     df = pd.DataFrame(periodData,columns=['time',feature])
-                    df = df[feature].astype(float).fillna(method='ffill')
+                    df[feature] = df[feature].astype(float).fillna(method='ffill')
+                    df[feature] = df[feature].fillna(method='ffill')
                     if feature in const.cumulative_cols:
                         df[feature] = df[feature].diff()
                         df[feature].loc[df[feature] < 0] = 0
@@ -89,8 +90,8 @@ def getData():
                 try:
                     df = pd.DataFrame(data30min,columns=[rt_feature])
                     # df = df.interpolate(method ='linear', limit_direction ='both')
-                    df = df[rt_feature].astype(float).fillna(method='ffill')
-                    df = df.fillna(method='bfill')
+                    df[rt_feature] = df[rt_feature].astype(float).fillna(method='ffill')
+                    df[rt_feature] = df[rt_feature].fillna(method='bfill')
                     for col in df.columns:
                         if col.split('_')[-1] == 'sum':
                             df[col] = df[col].diff()
