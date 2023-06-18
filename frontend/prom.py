@@ -56,9 +56,9 @@ def getData():
                 periodData = dataV['result'][0]['values']
                 try:
                     df = pd.DataFrame(periodData,columns=['time',feature])
-                    df = df.fillna(method='ffill')
+                    df = df[feature].astype(float).fillna(method='ffill')
                     if feature in const.cumulative_cols:
-                        df[feature] = df[feature].astype(float).diff()
+                        df[feature] = df[feature].diff()
                         df[feature].loc[df[feature] < 0] = 0
                     # print(periodData)
                 except Exception as e:
@@ -87,13 +87,13 @@ def getData():
                 periodData = dataV['result'][0]['values']
                 data30min = [float(i[1]) for i in periodData]
                 try:
-                    df = pd.DataFrame(data30min,columns=['time',rt_feature])
+                    df = pd.DataFrame(data30min,columns=[rt_feature])
                     # df = df.interpolate(method ='linear', limit_direction ='both')
-                    df = df.fillna(method='ffill')
+                    df = df[rt_feature].astype(float).fillna(method='ffill')
                     df = df.fillna(method='bfill')
                     for col in df.columns:
                         if col.split('_')[-1] == 'sum':
-                            df[col] = df[col].astype(float).diff()
+                            df[col] = df[col].diff()
                             df[col].loc[df[col] < 0] = 0
                 except Exception as e:
                     print("Error2: ",e)
@@ -112,7 +112,7 @@ def getData():
             
             try:
                 ma = df['sum'].rolling(window=24,min_periods=1).mean()
-                q = pd.DataFrame(sum)
+                
                 df['ma']= df['sum'] - ma
 
                 ma20 = df['sum'].rolling(window=24*10,min_periods=1).mean()
