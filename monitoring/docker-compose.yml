@@ -27,7 +27,7 @@ services:
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
-    command: ["--enable_metrics=diskIO,cpu,cpuLoad,sched,process,disk,diskIO,hugetlb,resctrl,memory,cpuset,memory_numa,advtcp,network,tcp,udp,oom_event,pref_event,referenced_memory,cpu_topology"]
+    # command: ["--enable_metrics=diskIO,cpu,cpuLoad,sched,process,disk,diskIO,hugetlb,resctrl,memory,cpuset,memory_numa,advtcp,network,tcp,udp,oom_event,pref_event,referenced_memory,cpu_topology"]
     networks:
       - robot-shop
 
