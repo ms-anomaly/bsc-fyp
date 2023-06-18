@@ -107,25 +107,25 @@ def getData():
                 df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
                 dfs[service] = df
             except:
-                df_rt = pd.DataFrame(5000, index=range(384), columns=[rt_feature])
+                df_rt = pd.DataFrame(5000, index=range(384))
                 df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
                 dfs[service] = df
                 print("rt sum error")
 
-        for service in const.containers:
+        for service in const.services:
             
             try:
-                ma = df['sum'].rolling(window=24,min_periods=1).mean()
+                ma = dfs[service]['sum'].rolling(window=24,min_periods=1).mean()
                 
-                df['ma']= df['sum'] - ma
+                dfs[service]['ma']= dfs[service]['sum'] - ma
 
-                ma20 = df['sum'].rolling(window=24*10,min_periods=1).mean()
-                df['ma20']= df['sum'] - ma20
+                ma20 = dfs[service]['sum'].rolling(window=24*10,min_periods=1).mean()
+                dfs[service]['ma20']= dfs[service]['sum'] - ma20
             except Exception as e:
                 print("Error3: ",e)
-                df['sum'] = pd.Series([0] * 384)            
-                df['ma'] = pd.Series([0] * 384)           
-                df['ma20'] = pd.Series([0] * 384)  
+                dfs[service]['sum'] = pd.Series([0] * 384)            
+                dfs[service]['ma'] = pd.Series([0] * 384)           
+                dfs[service]['ma20'] = pd.Series([0] * 384)  
         t = []
         for i in dfs.keys():
             
