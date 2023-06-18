@@ -101,9 +101,12 @@ def getData():
                 arr_rt.append(df[rt_feature])
             
             df = pd.concat(arr,axis=1)
-            df_rt = pd.concat(arr_rt,axis=1)
-            df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
-            dfs[service] = df
+            try:
+                df_rt = pd.concat(arr_rt,axis=1)
+                df['sum'] = df_rt.sum(axis=1)/len(df_rt.columns)
+                dfs[service] = df
+            except:
+                print("rt sum error")
 
         for service in const.containers:
             
