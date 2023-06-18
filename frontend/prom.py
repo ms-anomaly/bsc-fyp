@@ -58,8 +58,8 @@ def getData():
                     df = pd.DataFrame(periodData,columns=['time',feature])
                     df = df.fillna(method='ffill')
                     if feature in const.cumulative_cols:
-                        df[col] = df[col].diff()
-                        df[col].loc[df[col] < 0] = 0
+                        df[feature] = df[feature].diff()
+                        df[feature].loc[df[feature] < 0] = 0
                     # print(periodData)
                 except Exception as e:
                     print("Error: ",e)
