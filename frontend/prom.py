@@ -53,6 +53,9 @@ def getData():
                 periodData = dataV['result'][0]['values']
                 # print(periodData)
 
+                if len(periodData) < 1:
+                    break
+
                 if feature in const.cumulative_cols:
                     for k in range(24):                        
                         if periodData[k][1] != "" and periodData[k+1][1]!="":
@@ -148,7 +151,9 @@ def getData():
                     # print(dataV['result'][0]['values'])
                     periodData = dataV['result'][0]['values']
 
-                    
+                    if len(periodData) < 1:
+                        break
+
 
                 # DEBUG: Print RT values of a feature
                 # print(m, n,": ", end="")
@@ -180,6 +185,10 @@ def getData():
                         break
                     # print(dataV['result'][0]['values'])
                     periodData = dataV['result'][0]['values']
+
+                    if len(periodData) < 1:
+                        break
+
 
                     movingAvg5min = 0
                     if len(periodData)==60:
@@ -220,6 +229,9 @@ def getData():
                         break
                     # print(dataV['result'][0]['values'])
                     periodData = dataV['result'][0]['values']
+
+                    if len(periodData) < 1:
+                        break
 
                     movingAvg30min = 0
                     if len(periodData)==60:
