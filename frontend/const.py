@@ -88,6 +88,7 @@ for i in services:
 for metric in metrics:
     callee = metric.split('_')[3]
     if callee=='PDO': callee='mysql'
+    if callee=='mongo': callee='mongodb'
     if metric.split('_')[-1] == 'sum':
       rt_per_service[callee].append(metric)
 
