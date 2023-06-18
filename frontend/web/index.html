@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        body {
+          background-color: #333;
+          color: #fff;
+          margin: 0;
+          padding: 20px;
+        }
+    
+        .image-container {
+          display: flex;
+        }
+    
+        .image-container img {
+          width: 50%;
+          height: auto;
+        }
+    </style>
     <!-- <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
     <script defer src="https://pyscript.net/alpha/pyscript.js"></script> -->
 
@@ -20,11 +37,15 @@
         document.querySelector("img").setAttribute("src", encImg) -->
     </py-script>
     
-    <h1>Service Graph</h1>
-    <img src="../plots/serviceGraph.png" title="Service Graph" alt="Micro Service Graph" style="width:auto; height:500px">
+    <!-- <h1>Service Graph</h1>
 
-    <h1>SHAP Value Heat Map</h1>
-    <img src="../plots/heatmap.png" title="SHAP Value Heat Map" alt="Heat Map" style="width:auto; height:500px">
+    <h1>SHAP Value Heat Map</h1> -->
+
+    <div class="image-container">
+        <img src="../plots/serviceGraph.png" title="Service Graph" alt="Micro Service Graph" style="width:auto; height:500px">
+        <img src="../plots/heatmap.png" title="SHAP Value Heat Map" alt="Heat Map" style="width:auto; height:500px">
+    </div>
+    
 
 </body>
 </html>

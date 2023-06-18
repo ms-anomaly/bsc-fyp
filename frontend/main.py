@@ -16,6 +16,7 @@ import prom
 import frontend
 import localization
 from localization import *
+import matplotlib.pyplot as plt
 
 mean_train = pandas.read_csv("model/mean.csv")
 mean_train.pop(mean_train.columns[0])
@@ -28,6 +29,14 @@ std_train_t = torch.tensor(std_train.values)
 
 # print("mean shape:", mean_train_t.shape)
 # print("std shape:", std_train_t.shape)
+
+heatmap = np.zeros((12,22))
+plt.imshow(heatmap)
+plt.title("SHAP Value Heat Map")
+plt.savefig("plots/heatmap.png")
+
+node_colors = dict.fromkeys(const.services, 'lightgreen')
+frontend.drawServiceGraph(const.adj_matrix, const.services, node_colors, 'plots/serviceGraph.png')
 
 if __name__ == "__main__":
     while True:
