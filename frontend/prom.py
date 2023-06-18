@@ -21,6 +21,7 @@ def getData():
         window_5min_timestamp = datetime.datetime.fromtimestamp(current_timestamp-120-300).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
         window_30min_timestamp = datetime.datetime.fromtimestamp(current_timestamp-120-1800).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
 
+        print(start_timestamp, end_timestamp)
         # Iterate for each service
         for m, service in enumerate(const.containers):
             first = True
@@ -57,69 +58,76 @@ def getData():
                     break
 
                 if feature in const.cumulative_cols:
-                    for k in range(24):                        
-                        if periodData[k][1] != "" and periodData[k+1][1]!="":
-                            period[k][m][n] = float(periodData[k+1][1]) - float(periodData[k][1]) 
-                                # print("{:0.4f}".format(period[k][m][n]), end=" ")
-                        else:
-                            if k!=0:
-                                period[k][m][n] = period[k-1][m][n]
-                            else:
-                                i=1
-                                found = False
-                                while not found:
-                                    temp_time_1 = current_timestamp-120-5*i
-                                    temp_time_2 = current_timestamp-120-5*(i+1)
-                                    temp_time_str_1 = datetime.datetime.fromtimestamp(temp_time_1).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-                                    temp_time_str_2 = datetime.datetime.fromtimestamp(temp_time_2).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
-
-                                    temp_response_1 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
-                                            params={
-                                                'query': q,
-                                                'time': temp_time_str_1,
-                                                })
-                                    temp_response_2 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
-                                            params={
-                                                'query': q,
-                                                'time': temp_time_str_2,
-                                                })
-                                    
-                                    if temp_response_1.json()['data']['result'][0]['value'] != "" and temp_response_2.json()['data']['result'][0]['value'] != "":
-                                        found = True
-                                        i = 0
-                                        period[k][m][n] = float(temp_response_2.json()['data']['result'][0]['value'])-float(temp_response_1.json()['data']['result'][0]['value'])
-                                        
-                                    i += 1
-
-
-                else:
                     for k in range(24):
-                        if periodData[k][1] == "":
+                        try:                        
+                            if periodData[k][1] != "" and periodData[k+1][1]!="":
+                                period[k][m][n] = float(periodData[k+1][1]) - float(periodData[k][1]) 
+                                    # print("{:0.4f}".format(period[k][m][n]), end=" ")
+                            else:
                                 if k!=0:
-                                    period[k][m][n] = float(period[k-1][m][n])
+                                    period[k][m][n] = period[k-1][m][n]
                                 else:
                                     i=1
                                     found = False
                                     while not found:
-                                        temp_time = current_timestamp-120-5*i
-                                        temp_time_str = datetime.datetime.fromtimestamp(temp_time).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
+                                        temp_time_1 = current_timestamp-120-5*i
+                                        temp_time_2 = current_timestamp-120-5*(i+1)
+                                        temp_time_str_1 = datetime.datetime.fromtimestamp(temp_time_1).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
+                                        temp_time_str_2 = datetime.datetime.fromtimestamp(temp_time_2).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
 
-                                        temp_response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
+                                        temp_response_1 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
                                                 params={
                                                     'query': q,
-                                                    'time': temp_time_str,
+                                                    'time': temp_time_str_1,
+                                                    })
+                                        temp_response_2 = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
+                                                params={
+                                                    'query': q,
+                                                    'time': temp_time_str_2,
                                                     })
                                         
-                                        if temp_response.json()['data']['result'][0]['value'] != "":
+                                        if temp_response_1.json()['data']['result'][0]['value'] != "" and temp_response_2.json()['data']['result'][0]['value'] != "":
                                             found = True
                                             i = 0
-                                            period[k][m][n] = float(temp_response.json()['data']['result'][0]['value'])
+                                            period[k][m][n] = float(temp_response_2.json()['data']['result'][0]['value'])-float(temp_response_1.json()['data']['result'][0]['value'])
                                             
                                         i += 1
+                        except Exception as e:
+                            print(service, feature, e)
 
-                        else:
-                            period[k][m][n] = float(periodData[k][1])
-                            # print("{:0.4f}".format(period[k][m][n]), end=" ")
+
+                else:
+                    for k in range(24):
+                        try:                        
+                            if periodData[k][1] == "":
+                                    if k!=0:
+                                        period[k][m][n] = float(period[k-1][m][n])
+                                    else:
+                                        i=1
+                                        found = False
+                                        while not found:
+                                            temp_time = current_timestamp-120-5*i
+                                            temp_time_str = datetime.datetime.fromtimestamp(temp_time).strftime("%Y-%m-%dT%H:%M:%S.%fZ") # endtime - 2 minutes
+
+                                            temp_response = requests.get(PROMETHEUS + PROMETHEUS_ENDPOINT_INSTANT_QUERY, 
+                                                    params={
+                                                        'query': q,
+                                                        'time': temp_time_str,
+                                                        })
+                                            
+                                            if temp_response.json()['data']['result'][0]['value'] != "":
+                                                found = True
+                                                i = 0
+                                                period[k][m][n] = float(temp_response.json()['data']['result'][0]['value'])
+                                                
+                                            i += 1
+
+                            else:
+                                period[k][m][n] = float(periodData[k][1])
+                                # print("{:0.4f}".format(period[k][m][n]), end=" ")
+                        except Exception as e:
+                            print(service, feature, e)
+
 
                 # DEBUG
                 # print('\n')

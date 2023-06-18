@@ -373,6 +373,8 @@ class Localize():
 
         if not os.path.exists('plots/'):
             os.mkdir('plots/')
+        if not os.path.exists('plots/heatmap.png'):
+            os.remove('plots/heatmap.png')
         fig.savefig('plots/heatmap.png')
             # get shap values of detected anomalies
         shap_values_of_detected_anomalies = heat_maps_per_timestep[detected_anom_timesteps,:,:]

@@ -70,6 +70,8 @@ if __name__ == "__main__":
             
             suspect_services, suspect_features = localizer.localize_anomaly_voting(data_instance.to(torch.float32) , torch.tensor(results).to(torch.float32))
 
+            print(suspect_services)
+            print(suspect_features)
             print(const.services[suspect_services[-1]])
             print(const.cols_with_rt[suspect_features[-1]])
 
